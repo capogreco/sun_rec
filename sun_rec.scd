@@ -15,7 +15,16 @@ s.boot;
 
 ~lpd8_debugging = false;
 
-~sub_div = { 4 }; // change here and evaluate
+~sub_div = { 1 }; // change here and evaluate
 
-Pbindef (\arp_reggio, \amp, 0.1 ); // volume of the arpeggio
+Pbindef (\arp_reggio, \amp, 0.2 ); // volume of the arpeggio
+Pdef (\sine_arp).play
+
+
+Pbind (\instrument, \sine_drop).play
+
+
+
+
+
 

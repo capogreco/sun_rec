@@ -2,7 +2,7 @@
 ~last_time = Date.getDate.rawSeconds!4;
 
 ~cc_function = {
-	TempoClock.tempo_ (0.5  + (16 ** Pdefn (\control_1).asStream.next)).postln;
+	// TempoClock.tempo_ (0.5  + (16 ** Pdefn (\control_1).asStream.next)).postln;
 	~rejig_func.(21 * Pdefn (\control_2).asStream.next + 3);
 
 	// "~cc_function was called.".postln;
@@ -34,12 +34,14 @@
 	array_length = array_length.asInt;
 	new_index_array = Array.fill (array_length) { 3.rand };
 	new_octave_array = Array.fill (array_length) { (-1..1).choose };
-	new_slide_array = Array.euclid (array_length, array_length.rand, array_length.rand);
+	// new_slide_array = Array.euclid (array_length, array_length.rand, array_length.rand);
+	new_slide_array = [ 0 ];
 	new_octave_array.postln;
 	Pbindef (\arp_reggio,
 		\index_array, new_index_array,
 		\octave_array, new_octave_array,
-		\slide_array,new_slide_array,
+		// \slide_array,new_slide_array,
+		\sustain, Pdefn (\control_1),
 	);
 };
 
@@ -57,10 +59,12 @@
 };
 
 ~bass_note = {
-	arg ind;
+	arg ind, velocity;
+	velocity.postln;
 	Synth (\kick, [
-		\amp, 0.4,
-		\freq, ~freqs[ind] * (2 ** (ind + 1).neg),
+		\amp, 0.4 * (velocity / 127),
+		\freq, ~freqs[ind] / 2,
+		// \freq, ~freqs[ind] * (2 ** (ind + 1).neg),
 		\len, TempoClock.tempo.reciprocal * 16 * (2 ** ind),
 	]);
 };
@@ -70,7 +74,7 @@
 	Synth (\bell, [
 		\amp, 0.3,
 		\freq, ~freqs[ind],
-		\len, TempoClock.tempo.reciprocal * 2,
+		\len, TempoClock.beatDur * 16 * Pdef (\control_1),
 		\thickness, 0,
 	]);
 };
@@ -84,6 +88,7 @@
 	sub = period / ~sub_div.value;
 	if (period < 2) {
 		TempoClock.tempo_ (sub.reciprocal);
+		s.latency_ (period);
 		Pdefn (\control_1) {
 			{ sub.yield }.loop;
 		};
@@ -92,18 +97,15 @@
 };
 
 ~note_on_function = {
-	arg note_number, time;
+	arg note_number, time, velocity;
 
 	switch (note_number)
 	{ 60 }  {
 		~start_func.value;
 	}
 	{ 61 }  {
-		if (~patch_on.not) {
-			~tap_tempo.(time);
-		} {
-			~bell_note.(1);
-		};
+		~tap_tempo.(time);
+		~bell_note.(1);
 	}
 	{ 62 } {
 		~fin_func.value;
@@ -118,13 +120,13 @@
 		~change_pitch.(2, time);
 	}
 	{ 66 }{
-		~bass_note.(0);
+		~bass_note.(0, velocity);
 	}
 	{ 67 }{
-		~bass_note.(1);
+		~bass_note.(1, velocity);
 	}
 	{ 68 }{
-		~bass_note.(2);
+		~bass_note.(2, velocity);
 	};
 	// "~note_on_function was called.".postln;
 	// ("with note number " ++ note_number.asString).postln;

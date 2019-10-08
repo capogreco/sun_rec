@@ -60,7 +60,6 @@ SynthDef (\bell) {
 	arg freq = 880, pan = 0, amp = 0.2, len = 0.6, spread = 1, thickness = 1.0;
 	var sig, amp_env, stack, stack_number;
 
-
 	amp_env = Env.perc (0.01, len - 0.01, amp);
 	amp_env = EnvGen.kr (amp_env, doneAction: 2);
 
@@ -75,6 +74,7 @@ SynthDef (\bell) {
 	};
 
 	sig = SelectX.ar ((thickness * 6) + 1, stack);
+	// sig = stack[0];
 	sig = Pan2.ar (sig, pan, amp_env);
 
 	Out.ar (0, sig);
@@ -87,6 +87,16 @@ SynthDef (\sine) {
 	freq = freq * SinOsc.ar (freq * (0.0078125 ** (1 - vibrato_rate)), Rand (2pi), vibrato_width, 1);
 	sig = SinOsc.ar (freq);
 	sig = Pan2.ar (sig, pan, amp);
+	Out.ar (0, sig);
+}.add;
+
+SynthDef (\sine_drop) {
+	arg freq = 110, len = 1, sustain = 0.2, amp = 0.1, pan = 0;
+	var sig, env;
+	env = Env ([ 0, 1, 0 ], [ 0, len ], (sustain * 16) - 8 );
+	env = EnvGen.kr (env, doneAction: 2);
+	sig = SinOsc.ar (freq);
+	sig = Pan2.ar (sig, pan, amp * env);
 	Out.ar (0, sig);
 }.add;
 
